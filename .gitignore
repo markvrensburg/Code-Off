@@ -1,0 +1,32 @@
+*.class
+*.log
+
+# SBT
+.cache/
+.history/
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# IDE
+.scala_dependencies
+.worksheet
+.cache*
+.settings
+.project
+.classpath
+*/bin
+.idea
+*.iml
+out
+*.sc
+.ensime_cache/
+.ensime
+
+# Mac
+.DS_STORE
+
