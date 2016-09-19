@@ -1,18 +1,16 @@
 package codeoff.problem1
 
 import scala.scalajs.js
-import js.Dynamic.global
+import codeoff.core.{ProblemLocations, ProblemLocation, FileIO}
+
+import io.circe.syntax._
+import io.circe.generic.auto._
 
 object Main extends js.JSApp {
-
-  val fs = global.require("fs")
-
   def main(): Unit = {
-    val filenames = listFiles("./code_off-1")
-    println(filenames)
-  }
-
-  def listFiles(path: String): Seq[String] = {
-    fs.readdirSync(path).asInstanceOf[js.Array[String]]
+    val filenames = FileIO.listFiles(".")
+    val inputFile = filenames.filter(_.endsWith(".json")).head
+    val parsed = Problem1.parseJson(FileIO.readFile(inputFile))
+    println(parsed.getOrElse(ProblemLocations(List(ProblemLocation(0,"")))).asJson.noSpaces)
   }
 }

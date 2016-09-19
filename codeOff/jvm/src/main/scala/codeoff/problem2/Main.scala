@@ -1,6 +1,6 @@
-package codeoff.problem1
+package codeoff.problem2
 
-import Problem1._
+import codeoff.problem1.Problem1._
 
 object Main {
 
@@ -8,12 +8,13 @@ object Main {
 
     val text = for {
       ioDir <- ioArgs(args)
-      inputFile <- getListOfFiles(ioDir, ".json")
+      inputFile <- getListOfFiles(ioDir, ".in")
       //outputFile <-
       input <- readFile(inputFile.head)
       //move <- solve(parsedGame, botKey)
       //_ <- writeFile(outputFile, move.toString)
-    } yield input.mkString("\n")
-    println(parseJson(text.get))
+    } yield input
+    println(makeOutput(text.get).filter(_._3.nonEmpty).map(_._3).size)
+    println((value("zGvWDMZk"),value("cqELWZoiW")))
   }
 }
