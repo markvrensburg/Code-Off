@@ -1,20 +1,15 @@
 package codeoff.problem2
 
-import codeoff.problem1.Problem1._
+import codeoff.core.{FileIOJVM, JsonUtil, ProblemLocation, ProblemLocations}
+
+import io.circe.syntax._
+import io.circe.generic.auto._
 
 object Main {
-
   def main(args: Array[String]) = {
-
-    val text = for {
-      ioDir <- ioArgs(args)
-      inputFile <- getListOfFiles(ioDir, ".in")
-      //outputFile <-
-      input <- readFile(inputFile.head)
-      //move <- solve(parsedGame, botKey)
-      //_ <- writeFile(outputFile, move.toString)
-    } yield input
-    println(makeOutput(text.get).filter(_._3.nonEmpty).map(_._3).size)
-    println((value("zGvWDMZk"),value("cqELWZoiW")))
+    val filenames = FileIOJVM.listFiles(".")
+    val inputFile = filenames.filter(_.endsWith(".json")).head
+    val parsed = JsonUtil.parseJson(FileIOJVM.readFile(inputFile))
+    println(parsed.getOrElse(ProblemLocations(List(ProblemLocation(0, "")))).asJson.noSpaces)
   }
 }

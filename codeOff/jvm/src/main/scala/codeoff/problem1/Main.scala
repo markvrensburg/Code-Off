@@ -1,19 +1,9 @@
 package codeoff.problem1
 
-import Problem1._
+import codeoff.core.FileIOJVM
 
 object Main {
-
   def main(args: Array[String]) = {
-
-    val text = for {
-      ioDir <- ioArgs(args)
-      inputFile <- getListOfFiles(ioDir, ".json")
-      //outputFile <-
-      input <- readFile(inputFile.head)
-      //move <- solve(parsedGame, botKey)
-      //_ <- writeFile(outputFile, move.toString)
-    } yield input.mkString("\n")
-    println(parseJson(text.get))
+    Problem1.run("code_off-1", FileIOJVM)
   }
 }
