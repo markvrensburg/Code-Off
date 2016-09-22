@@ -1,8 +1,8 @@
 package codeoff.core
 
 import io.circe.Json
-import io.circe.parser._
 import io.circe.generic.auto._
+import io.circe.parser._
 
 object JsonUtil {
 

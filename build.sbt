@@ -31,7 +31,8 @@ lazy val codeOff = crossProject.in(file("codeOff"))
   .settings(commonSettings: _*)
   .settings(
     name := "code-off",
-    selectMainClass in Compile := Defaults.askForMainClass((discoveredMainClasses in Compile).value.sorted),
+    selectMainClass in Compile := Defaults.askForMainClass((discoveredMainClasses in Compile).value.sortBy(x =>
+      """\d+""".r.findFirstIn(x).map(_.toInt))),
     libraryDependencies ++= Seq(
       "io.circe" %%% "circe-core" % "0.5.1",
       "io.circe" %%% "circe-generic" % "0.5.1",

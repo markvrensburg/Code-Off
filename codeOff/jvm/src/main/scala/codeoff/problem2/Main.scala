@@ -1,9 +1,8 @@
 package codeoff.problem2
 
 import codeoff.core.{FileIOJVM, JsonUtil, ProblemLocation, ProblemLocations}
-
-import io.circe.syntax._
 import io.circe.generic.auto._
+import io.circe.syntax._
 
 object Main {
   def main(args: Array[String]) = {

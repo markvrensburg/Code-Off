@@ -1,9 +1,10 @@
 package codeoff.problem2
 
-import scala.scalajs.js
 import codeoff.core.{FileIOJS, JsonUtil, ProblemLocation, ProblemLocations}
-import io.circe.syntax._
 import io.circe.generic.auto._
+import io.circe.syntax._
+
+import scala.scalajs.js
 
 
 object Main extends js.JSApp {
