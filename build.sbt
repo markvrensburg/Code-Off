@@ -37,6 +37,8 @@ lazy val codeOff = crossProject.in(file("codeOff"))
       "io.circe" %%% "circe-core" % "0.5.1",
       "io.circe" %%% "circe-generic" % "0.5.1",
       "io.circe" %%% "circe-parser" % "0.5.1",
+      //"oncue.quiver" %% "core" % "5.3.57",
+      "org.scalaz" %%% "scalaz-core" % "7.2.6",
       "org.typelevel" %%% "cats-core" % "0.7.2",
       "org.typelevel" %%% "cats-free" % "0.7.2",
       "org.scalacheck" %%% "scalacheck" % "1.13.2" % "test"

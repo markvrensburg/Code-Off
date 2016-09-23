@@ -23,10 +23,8 @@ object Problem10 {
   def encodeWords(s: List[String]): Option[String] =
     s.map(encodeWord).sequence.map(_.mkString("/"))
 
-  def encodeWord(s: String): Option[String] = {
-    s.map(values.get).toList.sequence.map(_.map(encodeMorse))
-      .map(_.sequence).flatten.map(_.mkString("|"))
-  }
+  def encodeWord(s: String): Option[String] =
+    s.map(values.get).toList.sequence.map(_.map(encodeMorse)).flatMap(_.sequence).map(_.mkString("|"))
 
   def encodeMorse(s: String): Option[String] = {
     def valueOf(v: (Int, Char)): Option[String] = v match {
