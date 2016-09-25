@@ -1,12 +1,11 @@
 package codeoff.core
 
 import scala.scalajs.js
-import scala.scalajs.js.Dynamic._
 
 object FileIOJS extends FileIO {
 
-  private val fs = global.require("fs")
-  private val os = global.require("os")
+  private val fs = js.Dynamic.global.require("fs")
+  private val os = js.Dynamic.global.require("os")
 
   override val EOL = os.EOL.asInstanceOf[String]
 
