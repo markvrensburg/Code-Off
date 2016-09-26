@@ -29,13 +29,12 @@ object AStar {
       else {
         successors(current).foreach(n => {
           val state = n.getLabel.state
-          if (closed.contains(state)) {
-            //Do Nothing
+          if (!closed.contains(state)) {
+            if (open.exists(_.getLabel.state == state))
+              open.filterNot(x => (x.getLabel.state == state) && (x.getLabel.g > n.getLabel.g))
+            else
+              open.enqueue(n)
           }
-          else if (open.exists(_.getLabel.state == state))
-            open.filterNot(x => (x.getLabel.state == state) && (x.getLabel.g > n.getLabel.g))
-          else
-            open.enqueue(n)
         })
       }
     }

@@ -28,8 +28,8 @@ object AStarImmutable {
             retrievePlan(current)
           else {
             val candidate = successors(current).filterNot(x =>
-              closed.contains(x.getLabel.state) ||
-              cache.get(x.getLabel.state).fold(false)(_ > x.getLabel.g))
+              closed.contains(x.getLabel.state) || cache.get(x.getLabel.state).fold(false)(_ > x.getLabel.g))
+
             go(remainder.insertAll(candidate),
               closed + current.getLabel.state,
               cache ++ candidate.map(x => x.getLabel.state -> x.getLabel.g))

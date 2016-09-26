@@ -9,10 +9,10 @@ object FileIOJVM extends FileIO {
 
   override val EOL: String = System.lineSeparator
 
+  private def resolvePath(path: String): Path = Paths.get(path)
+
   override def listFiles(path: String): List[String] =
     resolvePath(path).toFile.listFiles.toList.map(_.getName)
-
-  private def resolvePath(path: String): Path = Paths.get(path)
 
   override def readFile(path: String): String =
     readFileLines(path).mkString(EOL)

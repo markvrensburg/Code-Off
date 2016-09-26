@@ -17,12 +17,9 @@ lazy val commonSettings = Seq(
     "-language:postfixOps",
     "-language:higherKinds",
     "-Xlint",
-//    "-Xfatal-warnings",
     "-Yno-adapted-args",
     "-Ywarn-unused-import",
     "-Ywarn-dead-code",
-    "-Ywarn-numeric-widen",
-    "-Ywarn-value-discard",
     "-Xfuture"
   )
 )
@@ -39,30 +36,19 @@ lazy val codeOff = crossProject.in(file("codeOff"))
       "io.circe" %%% "circe-parser" % "0.5.1",
       //"oncue.quiver" %% "core" % "5.3.57",
       "org.scalaz" %%% "scalaz-core" % "7.2.6",
-      "org.typelevel" %%% "cats-core" % "0.7.2",
-      "org.typelevel" %%% "cats-free" % "0.7.2",
+      "com.lihaoyi" %%% "fastparse" % "0.4.1",
       "org.scalacheck" %%% "scalacheck" % "1.13.2" % "test"
     ),
     testFrameworks += new TestFramework("scalacheck.ScalaCheckFramework")
   )
   .jvmSettings(
-    libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "0.9.0"/*,
-      "co.fs2" %% "fs2-io" % "0.9.0" */
-    )
+    libraryDependencies ++= Seq()
   )
   .jsSettings(
     scalaJSUseRhino in Global := false,
     scalaJSStage in Global := FullOptStage,
     persistLauncher := false,
-    libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "0.9.0"/*,
-      "be.doeraene" %%% "scalajs-jquery" % "0.9.0" */
-    )/*,
-    jsDependencies ++= Seq(
-      //RuntimeDOM
-      "org.webjars" % "jquery" % "3.1.0" / "3.1.0/jquery.js"
-    )*/
+    libraryDependencies ++= Seq()
   )
 
 lazy val codeOffJVM = codeOff.jvm.settings(name := "codeOffJVM")

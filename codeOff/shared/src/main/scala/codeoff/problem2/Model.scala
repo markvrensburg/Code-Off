@@ -3,7 +3,7 @@ package codeoff.problem2
 object Model {
 
   case class Liquid(kind: Int, amount: Int) {
-    def lessThan(other: Liquid): Boolean = amount < other.amount
+    override val toString: String = s"$kind => $amount"
   }
 
   case class Jar(capacity: Int, filled: Option[Liquid], kinds: Set[Int]) {
@@ -19,9 +19,6 @@ object Model {
     def isOfKind(kind: Int): Boolean =
       filled.fold(kinds.contains(kind))(kind == _.kind)
 
-    def emptierThan(other: Jar): Boolean =
-      space < other.space
-
     def getAction(liquids: Liquids): Set[Int] =
       capability.intersect(liquids.getKinds)
 
@@ -35,6 +32,8 @@ object Model {
       else
         (this, liquid)
     }
+
+    override val toString: String = s"${filled.fold("Empty")(x => s"${x.kind},${x.amount}")}"
   }
 
   object Jar {
@@ -71,6 +70,8 @@ object Model {
       } else
         this
     }
+
+    override val toString: String = s"Liquids(${liquids.toSeq.sortBy(_.kind)}"
   }
 
   object Liquids {
@@ -100,6 +101,8 @@ object Model {
         }
       } else
         (this, liquid)
+
+    override val toString: String = s"Jars(${jars.toSeq.sortBy(_._1)}"
   }
 
   object Jars {
