@@ -14,7 +14,9 @@ object Model {
     lazy val space = capacity - amountFilled
     lazy val isEmpty = filled.isEmpty
     lazy val isFull = filled.fold(false)(_.amount == capacity)
-    lazy val capability: Set[Int] = if (capacity > 0) filled.fold(kinds)(x => Set(x.kind)) else Set.empty
+    lazy val capability: Set[Int] =
+      if (capacity > 0) filled.fold(kinds)(x => Set(x.kind)) else Set.empty
+    lazy val fillable: Boolean = if (capacity > 0) isEmpty else false
 
     def isOfKind(kind: Int): Boolean =
       filled.fold(kinds.contains(kind))(kind == _.kind)
@@ -71,7 +73,8 @@ object Model {
         this
     }
 
-    override val toString: String = s"Liquids(${liquids.toSeq.sortBy(_.kind)}"
+    override val toString: String =
+      s"Liquids${liquids.toSeq.sortBy(_.kind).mkString("(", ",", ")")}"
   }
 
   object Liquids {
@@ -88,7 +91,7 @@ object Model {
     def spaceFor(liquidId: Int): Int =
       jars.filter(_._2.isOfKind(liquidId)).map(_._2.space).sum
 
-    lazy val fillable = jars.filterNot(x => x._2.capability.isEmpty || x._2.isFull).toList
+    lazy val fillable = jars.filter(_._2.fillable).toList
 
     def get(jarID: Int): Option[Jar] =
       jars.get(jarID)
@@ -102,7 +105,8 @@ object Model {
       } else
         (this, liquid)
 
-    override val toString: String = s"Jars(${jars.toSeq.sortBy(_._1)}"
+    override val toString: String =
+      s"Jars${jars.toSeq.sortBy(_._1).mkString("(", ",", ")")}"
   }
 
   object Jars {
@@ -128,7 +132,7 @@ object Model {
 
     lazy val remainder: Int = liquids.totalAmount
 
-    lazy val actions: List[Fill] = jars.fillable.sortBy(_._2.capability.size).headOption.fold(List.empty[Fill])(x =>
+    lazy val actions: List[Fill] = jars.fillable.sortBy(_._1).headOption.fold(List.empty[Fill])(x =>
       x._2.getAction(liquids).map(y => Fill(x._1, y)).toList
     )
   }

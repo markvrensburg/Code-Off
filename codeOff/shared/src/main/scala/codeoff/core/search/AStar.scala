@@ -5,15 +5,15 @@ import scalaz.{TreeLoc, Order}
 
 object AStar {
 
-  def run[A, B](tree: SearchTree[InformedSearchNode[A, B]], goal: Goal[A]): List[B] = {
+  def retrievePlan[A,B](from: TreeLoc[InformedSearchNode[A, B]]): List[B] =
+    from.path.map(_.action).reverse.tail.toList
+
+  def run[A, B](tree: SearchTree[InformedSearchNode[A, B]], goal: Goal[A]): Option[TreeLoc[InformedSearchNode[A, B]]] = {
 
     implicit val treeLocOrdering = Order[TreeLoc[InformedSearchNode[A,B]]].toScalaOrdering
 
     val open = mutable.PriorityQueue[TreeLoc[InformedSearchNode[A, B]]](tree.tree.loc)
     val closed = mutable.HashSet.empty[A]
-
-    def retrievePlan(from: TreeLoc[InformedSearchNode[A, B]]): List[B] =
-      from.path.map(_.action).reverse.tail.toList
 
     def successors[AA](node: TreeLoc[AA]): List[TreeLoc[AA]] = {
       def go(current: Option[TreeLoc[AA]], accum: List[TreeLoc[AA]]): List[TreeLoc[AA]] =
@@ -25,7 +25,7 @@ object AStar {
       val current = open.dequeue()
       closed.add(current.getLabel.state)
       if (goal(current.getLabel.state))
-        return retrievePlan(current)
+        return Some(current)
       else {
         successors(current).foreach(n => {
           val state = n.getLabel.state
@@ -38,6 +38,12 @@ object AStar {
         })
       }
     }
-    List.empty
+    None
   }
+
+  def runPlan[A, B](tree: SearchTree[InformedSearchNode[A, B]], goal: Goal[A]): List[B] =
+    run[A,B](tree, goal).fold(List.empty[B])(retrievePlan)
+
+  def runState[A, B](tree: SearchTree[InformedSearchNode[A, B]], goal: Goal[A]): Option[A] =
+    run[A,B](tree, goal).map(_.getLabel.state)
 }

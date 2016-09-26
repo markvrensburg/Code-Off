@@ -20,14 +20,27 @@ object Problem2 {
 
   def solve(input: FillingJars) = {
     val searchTree = SearchTree(InformedSearchNode(input, Fill(-1, -1), 0, NulHeuristic(input)), fillTransition(fillCost, NulHeuristic))
-    AStar.run(searchTree, fillGoal)
+    AStarImmutable.runState(searchTree, fillGoal)
+  }
+
+  def solveBrute(input: FillingJars) = {
+    val searchTree = SearchTree(InformedSearchNode(input, Fill(-1, -1), 0, NulHeuristic(input)), fillTransition(fillCost, NulHeuristic))
+    searchTree.tree.flatten.filter(_.state.actions.isEmpty).sortBy(_.state.remainder)
   }
 
   def run(directory: String, io: FileIO): Unit = {
     val filenames = io.listFiles(directory)
     val inputFile = filenames.filter(_.endsWith(".in")).head
     val text = io.readFileLines(s"$directory/$inputFile")
-    val solution = Parser.parse(text.mkString(";")).get
+    val state = Parser.parse(text.mkString(";")).get
+    println(state.minRemainder)
+    val solution = solve(state)
+    /*
+    val solutionBrute = solveBrute(state)
+    println(solutionBrute.head.state)
+    println(solutionBrute.head.state.remainder)
+    */
     println(solution)
+    println(solution.map(_.remainder))
   }
 }
