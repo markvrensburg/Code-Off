@@ -13,7 +13,6 @@ object Model {
     lazy val amountFilled = filled.fold(0)(_.amount)
     lazy val space = capacity - amountFilled
     lazy val isEmpty = filled.isEmpty
-    lazy val isFull = filled.fold(false)(_.amount == capacity)
     lazy val capability: Set[Int] =
       if (capacity > 0) filled.fold(kinds)(x => Set(x.kind)) else Set.empty
     lazy val fillable: Boolean = if (capacity > 0) isEmpty else false
@@ -34,8 +33,6 @@ object Model {
       else
         (this, liquid)
     }
-
-    override val toString: String = s"${filled.fold("Empty")(x => s"${x.kind},${x.amount}")}"
   }
 
   object Jar {
@@ -45,12 +42,9 @@ object Model {
 
   case class Liquids(liquids: Set[Liquid]) {
 
-    lazy val totalAmount: Int = liquids.map(_.amount).sum
+    lazy val totalAmount: Int = liquids.toList.map(_.amount).sum
 
-    lazy val getKinds: Set[Int] = liquids.map(_.kind)
-
-    def get(liquidID: Int): Option[Liquid] =
-      liquids.find(_.kind == liquidID)
+    lazy val getKinds: Set[Int] = liquids.toList.map(_.kind).toSet
 
     def getKind(kind: Int): Option[Liquid] =
       liquids.find(_.kind == kind)
@@ -72,9 +66,6 @@ object Model {
       } else
         this
     }
-
-    override val toString: String =
-      s"Liquids${liquids.toSeq.sortBy(_.kind).mkString("(", ",", ")")}"
   }
 
   object Liquids {
@@ -84,17 +75,7 @@ object Model {
 
   case class Jars(jars: Map[Int, Jar]) {
 
-    lazy val totalSpace: Int = jars.mapValues(_.space).values.sum
-
-    lazy val canFill: Set[(Int, Set[Int])] = jars.filterNot(_._2.isFull).map(x => (x._1, x._2.capability)).toSet
-
-    def spaceFor(liquidId: Int): Int =
-      jars.filter(_._2.isOfKind(liquidId)).map(_._2.space).sum
-
     lazy val fillable = jars.filter(_._2.fillable).toList
-
-    def get(jarID: Int): Option[Jar] =
-      jars.get(jarID)
 
     def fill(jarID: Int, liquid: Liquid): (Jars, Liquid) =
       if (liquid.amount > 0) {
@@ -105,8 +86,7 @@ object Model {
       } else
         (this, liquid)
 
-    override val toString: String =
-      s"Jars${jars.toSeq.sortBy(_._1).mkString("(", ",", ")")}"
+    def sorted: List[Jar] = jars.toList.sortBy(_._1).map(_._2)
   }
 
   object Jars {
@@ -121,14 +101,6 @@ object Model {
       val (filledJars, leftOverLiquid) = jars.fill(fill.jarID, l)
       FillingJars(liquids.remove(l).add(leftOverLiquid), filledJars)
     }
-
-    def getJar(jarID: Int): Option[Jar] =
-      jars.get(jarID)
-
-    def getLiquid(liquidID: Int): Option[Liquid] =
-      liquids.get(liquidID)
-
-    lazy val minRemainder: Int = liquids.liquids.map(x => (x.amount - jars.spaceFor(x.kind)).max(0: Int)).sum
 
     lazy val remainder: Int = liquids.totalAmount
 
