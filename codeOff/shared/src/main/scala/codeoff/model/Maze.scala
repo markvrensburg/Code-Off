@@ -3,35 +3,53 @@ package codeoff.model
 object Maze {
 
   sealed trait Entity extends Product with Serializable {
-    def fold[A](empty: => A, wall: => A, subject: => A, goal: => A, marked: => A): A = this match {
+    import Entity._
+    def fold[A](empty: => A,
+                wall: => A,
+                subject: => A,
+                goal: => A,
+                nGoal: Int => A,
+                marked: => A): A = this match {
       case Empty => empty
       case Wall => wall
       case Subject => subject
       case Goal => goal
+      case NumberedGoal(n) => nGoal(n)
       case Marked => marked
     }
   }
-  case object Empty extends Entity
-  case object Wall extends Entity
-  case object Subject extends Entity
-  case object Goal extends Entity
-  case object Marked extends Entity
 
   object Entity {
 
-    def show(entity: Entity): Char = entity.fold(' ', '#', '@', 'U', '.')
+    case object Empty extends Entity
+
+    case object Wall extends Entity
+
+    case object Subject extends Entity
+
+    case object Goal extends Entity
+
+    case class NumberedGoal(number: Int) extends Entity
+
+    case object Marked extends Entity
+
+    def show(entity: Entity): Char =
+      entity.fold(' ', '#', '@', 'U', _.toString.head, '.')
 
     def read(char: Char): Entity =  char match {
       case ' ' => Empty
-      case'#' => Wall
-      case'@' => Subject
-      case'U' => Goal
-      case'.' => Goal
+      case '#' => Wall
+      case '@' => Subject
+      case 'U' => Goal
+      case '.' => Goal
+      case d if d.isDigit => NumberedGoal(d.toInt)
       case _ => Wall
     }
   }
 
   case class Maze(width: Int, height: Int, rep: Map[Location, Entity]) {
+
+    import Entity._
 
     lazy val current: Option[Location] = rep.find(_._2 == Subject).map(_._1)
     lazy val goals: Set[Location] = rep.filter(_._2 == Goal).keySet
@@ -46,7 +64,7 @@ object Maze {
     }
 
     def canMoveTo(location: Location): Boolean =
-      rep.get(location).fold(false)(_.fold(true,false,true,true,true))
+      rep.get(location).fold(false)(_.fold(true,false,true,true, _ => true, true))
 
     def neighbours(location: Location): Set[Location] =
       Direction.directions.map(location(_)).filter(rep.get(_).isDefined)

@@ -16,8 +16,5 @@ object MazeParser {
     Maze(size, size, locs.toMap)
   }))
 
-  def parse(input: String): Try[Maze] =
-    Try(maze.parse(input).get.value)
+  def parse(input: String): Try[Maze] = Try(maze.parse(input).get.value)
 }
-
-

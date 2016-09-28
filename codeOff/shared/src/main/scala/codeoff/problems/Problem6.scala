@@ -39,11 +39,12 @@ object Problem6 {
       val state = MazeParser.parse(text.mkString).get
 
       println(state.goals)
-      val solution = solve(state)
-      println(solution)
-      val solutionOutput = state.mark(solution.init.toSet).draw
+      println(state.draw.mkString("\n"))
+      //val solution = solve(state)
+      //println(solution)
+      //val solutionOutput = state.mark(solution.init.toSet).draw
 
-      println(solutionOutput.mkString("\n"))
+      //println(solutionOutput.mkString("\n"))
       //io.writeFileLines(s"$directory/${file.replace(".in", ".out")}", solutionOutput)
     }
   }

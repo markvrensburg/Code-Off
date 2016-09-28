@@ -14,9 +14,6 @@ object FileIOJVM extends FileIO {
   override def listFiles(path: String): List[String] =
     resolvePath(path).toFile.listFiles.toList.map(_.getName)
 
-  override def readFile(path: String): String =
-    readFileLines(path).mkString(EOL)
-
   override def readFileLines(path: String): List[String] = {
     val source = Source.fromFile(resolvePath(path).toFile)(StandardCharsets.UTF_8)
     source.getLines.toList
@@ -27,7 +24,7 @@ object FileIOJVM extends FileIO {
     ()
   }
 
-  override def writeFile(path: String, data: String): Unit = {
+  private def writeFile(path: String, data: String): Unit = {
     Files.write(resolvePath(path), data.getBytes(StandardCharsets.UTF_8))
     ()
   }
