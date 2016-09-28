@@ -1,6 +1,7 @@
 package codeoff.problem10
 
-import codeoff.core.FileIOJS
+import codeoff.problems.Problem10
+import codeoff.fileio.FileIOJS
 
 import scala.scalajs.js
 

@@ -1,6 +1,7 @@
 package codeoff.problem11
 
-import codeoff.core.FileIOJVM
+import codeoff.problems.Problem11
+import codeoff.fileio.FileIOJVM
 
 object Main {
 

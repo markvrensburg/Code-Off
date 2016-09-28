@@ -1,6 +1,6 @@
-package codeoff.problem1
+package codeoff.problem6
 
-import codeoff.problems.Problem1
+import codeoff.problems.Problem6
 import codeoff.fileio.FileIOJS
 
 import scala.scalajs.js
@@ -8,6 +8,6 @@ import scala.scalajs.js
 object Main extends js.JSApp {
 
   def main(): Unit = {
-    Problem1.run("code_off-1", FileIOJS)
+    Problem6.run("code_off-6", FileIOJS)
   }
 }
