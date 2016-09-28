@@ -1,4 +1,4 @@
-package codeoff.core
+package codeoff.core.data
 
 object MorseCode {
 

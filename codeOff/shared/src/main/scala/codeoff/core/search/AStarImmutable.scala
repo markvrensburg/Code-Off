@@ -2,14 +2,22 @@ package codeoff.core.search
 
 import scala.annotation.tailrec
 import scala.collection.immutable.{HashMap, HashSet}
-import scalaz.{Heap, TreeLoc}
+import scalaz.{Order, Heap, TreeLoc}
 
-object AStar {
+object AStarImmutable {
 
   def retrievePlan[A,B](from: TreeLoc[InformedSearchNode[A, B]]): List[B] =
     from.path.map(_.action).reverse.tail.toList
 
   def run[A, B](tree: SearchTree[InformedSearchNode[A, B]], goal: Goal[A]): Option[TreeLoc[InformedSearchNode[A, B]]] = {
+
+    implicit val treeLocOrdering = Order.fromScalaOrdering {
+      new Ordering[TreeLoc[InformedSearchNode[A, B]]] {
+        override def compare(x: TreeLoc[InformedSearchNode[A, B]], y: TreeLoc[InformedSearchNode[A, B]]): Int = {
+          Ordering[Double].compare(y.getLabel.eval, x.getLabel.eval)
+        }
+      }
+    }
 
     def successors[AA](node: TreeLoc[AA]): List[TreeLoc[AA]] = {
       @tailrec

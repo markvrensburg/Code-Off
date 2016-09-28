@@ -2,10 +2,11 @@ package codeoff.problem11
 
 import cats.implicits._
 import codeoff.core.FileIO
+import codeoff.core.data.MorseCode
 
 object Problem11 {
 
-  import codeoff.core.MorseCode._
+  import MorseCode._
 
   def run(directory: String, io: FileIO): Unit = {
     val filenames = io.listFiles(directory)

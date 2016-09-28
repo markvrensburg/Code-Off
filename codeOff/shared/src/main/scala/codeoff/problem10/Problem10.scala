@@ -2,12 +2,13 @@ package codeoff.problem10
 
 import cats.implicits._
 import codeoff.core.FileIO
+import codeoff.core.data.MorseCode
 
 import scala.annotation.tailrec
 
 object Problem10 {
 
-  import codeoff.core.MorseCode._
+  import MorseCode._
 
   def run(directory: String, io: FileIO): Unit = {
     val filenames = io.listFiles(directory)
