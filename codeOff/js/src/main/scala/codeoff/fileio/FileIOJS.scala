@@ -11,22 +11,13 @@ object FileIOJS extends FileIO {
 
   private val options = js.Dynamic.literal(encoding = "UTF-8", flag = "w")
 
-  override def listFiles(path: String): List[String] =
-    fs.readdirSync(path).asInstanceOf[js.Array[String]].toList
+  override def listFiles(path: String): List[String] = fs.readdirSync(path).asInstanceOf[js.Array[String]].toList
 
-  private def readFile(path: String): String =
-    fs.readFileSync(path).asInstanceOf[String]
+  private def readFile(path: String): String = fs.readFileSync(path).asInstanceOf[String]
 
-  override def readFileLines(path: String): List[String] =
-    readFile(path).replace("\r","").split("\n").toList
+  override def readFileLines(path: String): List[String] = readFile(path).split("[\n|\r\n]").toList
 
-  override def writeFileLines(path: String, data: List[String]): Unit = {
-    writeFile(path, data.mkString(EOL))
-    ()
-  }
+  override def writeFileLines(path: String, data: List[String]): Unit = writeFile(path, data.mkString(EOL))
 
-  private def writeFile(path: String, data: String): Unit = {
-    fs.writeFileSync(path, data, options)
-    ()
-  }
+  private def writeFile(path: String, data: String): Unit = fs.writeFileSync(path, data, options)
 }
