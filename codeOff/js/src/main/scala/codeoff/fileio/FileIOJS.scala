@@ -15,7 +15,7 @@ object FileIOJS extends FileIO {
 
   private def readFile(path: String): String = fs.readFileSync(path).asInstanceOf[String]
 
-  override def readFileLines(path: String): List[String] = readFile(path).split("[\n|\r\n]").toList
+  override def readFileLines(path: String): List[String] = readFile(path).split("(\n)|(\r\n)").toList
 
   override def writeFileLines(path: String, data: List[String]): Unit = writeFile(path, data.mkString(EOL))
 

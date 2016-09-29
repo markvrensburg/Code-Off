@@ -8,12 +8,12 @@ import codeoff.search._
 
 object Problem6 {
 
-  def locationHeuristic(goal: Location): Heuristic[Maze] =
-    _.current.fold(Double.MaxValue)(l => Distance.manhattan(l, goal))
+  def locationHeuristic(goals: Set[Location]): Heuristic[Maze] =
+    _.current.fold(Double.MaxValue)(l => goals.map(g => Distance.manhattan(l, g)).min)
 
   val locationCost: CostFunction[Maze, Location] = (_,_) => 1
 
-  def locationGoal(goal: Location): Goal[Maze] = _.current.fold(false)(_ == goal)
+  def locationGoal(goals: Set[Location]): Goal[Maze] = _.current.fold(false)(goals.contains)
 
   def transition(g: CostFunction[Maze, Location], h: Heuristic[Maze]): Transition[InformedSearchNode[Maze, Location]] =
     node => {
@@ -24,28 +24,22 @@ object Problem6 {
     }.toStream
 
   def solve(input: Maze) = {
-    val goal = input.goals.head
-    val h = locationHeuristic(goal)
+    val goals = input.goals
+    val h = locationHeuristic(goals)
     val initial = InformedSearchNode(input, input.current.get, 0, h(input))
     val searchTree = SearchTree(initial, transition(locationCost, h))
-    AStarImmutable.runPlan(searchTree, locationGoal(goal))
+    AStarMutable.runPlan(searchTree, locationGoal(goals))
   }
 
   def run(directory: String, io: FileIO): Unit = {
     val filenames = io.listFiles(directory)
-    val inputFiles = filenames.filter(_.endsWith(".in")).take(1)
+    val inputFiles = filenames.filter(_.endsWith(".in"))//.take(1)
     inputFiles.foreach{file =>
       val text = io.readFileLines(s"$directory/$file")
       val state = MazeParser.parse(text.mkString).get
-
-      println(state.goals)
-      println(state.draw.mkString("\n"))
-      //val solution = solve(state)
-      //println(solution)
-      //val solutionOutput = state.mark(solution.init.toSet).draw
-
-      //println(solutionOutput.mkString("\n"))
-      //io.writeFileLines(s"$directory/${file.replace(".in", ".out")}", solutionOutput)
+      val solution = solve(state)
+      val solutionOutput = state.mark(solution.init.toSet).draw
+      io.writeFileLines(s"$directory/${file.replace(".in", ".out")}", solutionOutput)
     }
   }
 }
