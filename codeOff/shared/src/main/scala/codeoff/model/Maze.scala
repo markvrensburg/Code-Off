@@ -42,7 +42,7 @@ object Maze {
       case '@' => Subject
       case 'U' => Goal
       case '.' => Goal
-      case d if d.isDigit => NumberedGoal(d.toInt)
+      case d if d.isDigit => NumberedGoal(d.toString.toInt)
       case _ => Wall
     }
   }
@@ -53,6 +53,12 @@ object Maze {
 
     lazy val current: Option[Location] = rep.find(_._2 == Subject).map(_._1)
     lazy val goals: Set[Location] = rep.filter(_._2 == Goal).keySet
+
+    lazy val sequentialGoals: List[(Int, Location)] = rep.map(x => x._2 match {
+        case ng: NumberedGoal => Some((ng, x._1))
+        case _ => None
+      }).toList.flatMap(_.fold(List.empty[(Int, Location)])(x => List((x._1.number, x._2))))
+
 
     def apply(direction: Direction): Maze = current.fold(this)(curr => apply(curr(direction)))
 
@@ -68,6 +74,10 @@ object Maze {
 
     def neighbours(location: Location): Set[Location] =
       Direction.directions.map(location(_)).filter(rep.get(_).isDefined)
+
+    def assignCurrent(location: Location): Maze = current.fold(this) { curr =>
+      Maze(width, height, rep + ((curr, Empty)) + ((location, Subject)))
+    }
 
     def mark(locations: Set[Location]): Maze = Maze(width, height, rep ++ locations.map((_, Marked)))
 
