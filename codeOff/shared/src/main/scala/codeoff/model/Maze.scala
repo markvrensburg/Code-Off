@@ -41,7 +41,7 @@ object Maze {
       case '#' => Wall
       case '@' => Subject
       case 'U' => Goal
-      case '.' => Goal
+      case '.' => Marked
       case d if d.isDigit => NumberedGoal(d.toString.toInt)
       case _ => Wall
     }
