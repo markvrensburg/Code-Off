@@ -38,6 +38,17 @@ object Bomber {
 
     import Entity._
 
+    def apply(bomb: Block[Bomb]): BomberArena = {
+      if (validLocation(bomb.location))
+        BomberArena(width,height, rep + bomb.tupled)
+      else
+        this
+    }
+
+    def apply(bombs: Set[Block[Bomb]]): BomberArena = bombs.foldLeft(this)((arena, bomb) => arena(bomb))
+
+    def validLocation(location: Location): Boolean = rep.get(location).isDefined
+
     def adjacentBonus(f: (Int, Int) => Int): BomberArena = {
       val updated = rep.map(x => x._2 match {
         case Bomb(r) => (x._1, Bomb(f(r,neighbourBombs(x._1))))
@@ -46,7 +57,7 @@ object Bomber {
       BomberArena(width,height,updated)
     }
 
-    def explosionRegion(location: Location, radius: Int): Vector[Location] = {
+    def explodedRegion(location: Location, radius: Int): Vector[Location] = {
       @tailrec
       def go(location: Location, steps: Int, accum: Vector[Location]): Vector[Location] = {
         if (steps == 0)
@@ -58,22 +69,27 @@ object Bomber {
       go(location, radius, Vector.empty)
     }
 
+    def explosionAt(location: Location): Boolean = rep.get(location).fold(true) {
+      case Explosion => true
+      case _ => false
+    }
+
     def bombAt(location: Location): Option[Block[Bomb]] = rep.get(location).flatMap {
       case b: Bomb => Some(Block(location, b))
       case _ => None
     }
+
+    lazy val explosions: Set[Location] = rep.keySet.filter(explosionAt)
 
     lazy val bombs: Vector[Block[Bomb]] = rep.keySet.toVector.flatMap(bombAt(_) match {
       case None => Vector.empty
       case Some(b) => Vector(b)
     })
 
-    lazy val explodeBombs: BomberArena = {
-      val explosions = bombs.flatMap(x =>
-        explosionRegion(x.location, x.entity.radius)).toSet.intersect(rep.keySet)
+    lazy val explosionRegion: Set[Location] = bombs.flatMap(x =>
+      explodedRegion(x.location, x.entity.radius)).toSet.intersect(rep.keySet)
 
-      BomberArena(width,height, rep ++ explosions.map((_, Explosion)))
-    }
+    lazy val explodeBombs: BomberArena = BomberArena(width,height, rep ++ explosionRegion.map((_, Explosion)))
 
     def neighbourBombs(location: Location): Int = Direction.allDirections.map(location(_)).toList.map(rep.get(_).fold(0){
         case Bomb(_) => 1
@@ -82,5 +98,29 @@ object Bomber {
 
     lazy val draw: List[String] = Location.orderedStream(width, height).toList.map(x =>
       rep.get(x).fold(Entity.show(Wall))(Entity.show)).grouped(width).map(_.mkString).toList
+  }
+
+  object BomberArena {
+
+    import Entity._
+
+    def walls(width: Int, height: Int): BomberArena =
+      BomberArena(width, height, Location.orderedStream(width, height).map((_, Wall)).toMap)
+  }
+
+  case class BombPlacement(bomberArena: BomberArena) {
+    import Entity.Bomb
+
+    def maxRadius(location: Location): Int = {
+      @tailrec
+      def go(location: Location, radius: Int): Int = {
+        val reachable = Direction.simpleDirections.map(location(_, radius)).map(bomberArena.explosionAt)
+        if (reachable.contains(false)) radius - 1 else  go(location, radius + 1)
+      }
+      go(location, 1)
+    }
+
+    lazy val bombPlacements: Set[Block[Bomb]] =
+      bomberArena.explosions.map(x => Block(x,Bomb(maxRadius(x)))).filterNot(_.entity.radius <= 0)
   }
 }
