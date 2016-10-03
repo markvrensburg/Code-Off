@@ -2,43 +2,72 @@ package codeoff.model
 
 sealed trait Direction extends Product with Serializable {
 
-  def fold[A](up: => A,
-              left: => A,
-              right: => A,
-              down: => A): A =
+  def fold[A](n: => A,
+              ne: => A,
+              e: => A,
+              se: => A,
+              s: => A,
+              sw: => A,
+              w: => A,
+              nw: => A): A =
     this match {
-      case Up => up
-      case Left => left
-      case Right => right
-      case Down => down
+      case North => n
+      case NorthEast => ne
+      case East => e
+      case SouthEast => se
+      case South => s
+      case SouthWest => sw
+      case West => w
+      case NorthWest => nw
     }
 }
 
-case object Up extends Direction
 
-case object Left extends Direction
+case object North extends Direction
 
-case object Right extends Direction
+case object West extends Direction
 
-case object Down extends Direction
+case object East extends Direction
+
+case object South extends Direction
+
+case object NorthEast extends Direction
+
+case object SouthEast extends Direction
+
+case object SouthWest extends Direction
+
+case object NorthWest extends Direction
+
 
 object Direction {
 
-  val directions: Set[Direction] = Set(
-    Up,
-    Left,
-    Right,
-    Down
+  val simpleDirections: Set[Direction] = Set(
+    North,
+    East,
+    South,
+    West
   )
 
-  val up: Direction = Up
+  val allDirections: Set[Direction] = Set(
+    North,
+    NorthEast,
+    East,
+    SouthEast,
+    South,
+    SouthWest,
+    West,
+    NorthWest
+  )
 
-  val left: Direction = Left
+  val north: Direction = North
 
-  val right: Direction = Right
+  val west: Direction = West
 
-  val down: Direction = Down
+  val east: Direction = East
+
+  val south: Direction = South
 
   def opposite(direction: Direction): Direction =
-    direction.fold(Down, Right, Left, Up)
+    direction.fold(South, SouthWest, West, NorthWest, North, NorthEast, East, SouthEast)
 }

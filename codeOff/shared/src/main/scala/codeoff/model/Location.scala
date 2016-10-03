@@ -5,10 +5,14 @@ import scala.annotation.tailrec
 final case class Location(x: Int, y: Int) {
 
   def apply(direction: Direction): Location = direction match {
-    case Up => Location(x, y - 1)
-    case Down => Location(x, y + 1)
-    case Left => Location(x - 1, y)
-    case Right => Location(x + 1, y)
+    case North => Location(x, y - 1)
+    case NorthEast => Location(x + 1, y - 1)
+    case East => Location(x + 1, y)
+    case SouthEast => Location(x + 1, y + 1)
+    case South => Location(x, y + 1)
+    case SouthWest => Location(x - 1, y + 1)
+    case West => Location(x - 1, y)
+    case NorthWest => Location(x - 1, y - 1)
   }
 
   def apply(direction: Direction, steps: Int): Location = {

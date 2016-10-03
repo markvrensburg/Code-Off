@@ -73,7 +73,7 @@ object Maze {
       rep.get(location).fold(false)(_.fold(true,false,true,true, _ => true, true))
 
     def neighbours(location: Location): Set[Location] =
-      Direction.directions.map(location(_)).filter(rep.get(_).isDefined)
+      Direction.simpleDirections.map(location(_)).filter(rep.get(_).isDefined)
 
     def assignCurrent(location: Location): Maze = current.fold(this) { curr =>
       Maze(width, height, rep + ((curr, Empty)) + ((location, Subject)))
