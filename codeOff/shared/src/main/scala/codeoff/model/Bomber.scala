@@ -114,8 +114,13 @@ object Bomber {
     def maxRadius(location: Location): Int = {
       @tailrec
       def go(location: Location, radius: Int): Int = {
-        val reachable = Direction.simpleDirections.map(location(_, radius)).map(bomberArena.explosionAt)
-        if (reachable.contains(false)) radius - 1 else  go(location, radius + 1)
+        val reachable = Direction.simpleDirections.map(location(_, radius))
+        if (reachable.forall(x => !bomberArena.validLocation(x)))
+          radius - 1
+        else if (reachable.exists(x => !bomberArena.explosionAt(x)))
+          radius - 1
+        else
+          go(location, radius + 1)
       }
       go(location, 1)
     }
