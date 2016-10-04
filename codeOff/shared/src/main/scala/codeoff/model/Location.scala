@@ -40,6 +40,9 @@ object Location {
     })
   }
 
+  def band(xMin: Int, xMax: Int, yMin: Int, yMax: Int): Stream[Location] =
+    orderedStream(xMax-xMin+1, yMax-yMin+1, xMin, yMin).filterNot(l => (l.x < xMax) && (l.x > xMin) && (l.y < yMax) && (l.y > yMin))
+
   implicit val locationOrdering: Ordering[Location] = new Ordering[Location] {
     override def compare(l1: Location, l2: Location): Int = {
       if (l1.y > l2.y) 1

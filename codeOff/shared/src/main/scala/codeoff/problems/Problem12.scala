@@ -46,7 +46,7 @@ object Problem12 {
       val state = CardDeckParser.parse(text.mkString.filterNot(_.isSpaceChar)).get.asThunee
       val solution = solveTree(state,4,16)
       val solutionOutput =
-        s"This file should contain ${combinations(24,4,4)} entries..." ::
+        s"This file should contain ${combinations(state.cards.size,4,4)} entries..." ::
         solution.map(Hands.orderd).take(100).toList.distinct.map(Hands.show) ++
         List("...")
       io.writeFileLines(s"$directory/${file.replace(".in", ".out")}", solutionOutput)

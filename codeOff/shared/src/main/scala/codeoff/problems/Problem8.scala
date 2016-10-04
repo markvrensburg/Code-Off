@@ -3,7 +3,6 @@ package codeoff.problems
 import codeoff.fileio.FileIO
 import codeoff.parser.BomberArenaParser
 
-
 object Problem8 {
 
   def run(directory: String, io: FileIO): Unit = {
