@@ -36,6 +36,7 @@ lazy val codeOff = crossProject.in(file("codeOff"))
       "io.circe" %%% "circe-core" % "0.5.1",
       "io.circe" %%% "circe-generic" % "0.5.1",
       "io.circe" %%% "circe-parser" % "0.5.1",
+      "org.spire-math" %%% "spire" % "0.12.0",
       "io.monix" %%% "monix" % "2.0.2",
       //"io.verizon.quiver" %% "core" % "5.4.9",
       "org.scalaz" %%% "scalaz-core" % "7.2.6",
