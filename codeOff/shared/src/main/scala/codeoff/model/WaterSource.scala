@@ -2,6 +2,8 @@ package codeoff.model
 
 import quiver._
 
+import scala.annotation.tailrec
+
 object WaterSource {
 
   sealed trait Entity extends Product with Serializable {
@@ -37,6 +39,34 @@ object WaterSource {
 
     lazy val allWater: Set[Location] = rep.filter(_._2 == Water).keySet
 
+    lazy val allWall: Set[Location] = rep.filter(_._2 == Wall).keySet
+
+    lazy val waterEdges: Set[Location] = allWater.filter(x => neighbours(x).map(rep.get).exists{
+      case Some(Wall) => true
+      case _ => false
+    })
+
+    lazy val wallEdges: Set[Location] = allWall.filter(x => neighbours(x).map(rep.get).exists{
+      case Some(Water) => true
+      case _ => false
+    })
+
+    def removeWall(location: Location): WaterSource = {
+      rep.get(location).fold(this) {
+        case Wall => WaterSource(width, height, rep + ((location, Water)))
+        case _ => this
+      }
+    }
+
+    def removeWall(locations: Set[Location]): WaterSource = {
+      val walls = locations.intersect(rep.keySet).filter(x => rep.get(x) match {
+        case Some(Wall) => true
+        case _ => false
+      })
+
+      WaterSource(width, height, rep ++ walls.map(x => (x, Water)))
+    }
+
     def waterBody(location: Location): Set[Location] = graph.labfilter(_ == Water).bfs(location).toSet
 
     def neighbours(location: Location): Set[Location] =
@@ -51,15 +81,20 @@ object WaterSource {
 
       val water = graph.labfilter(_ == Water)
 
-      def go(check: Vector[Location], accum: Vector[Set[Location]]): Vector[Set[Location]] = {
-        check.headOption.fold(accum)(l => {
+      @tailrec
+      def go(check: Vector[Location], accum: Vector[Set[Location]]): Vector[Set[Location]] = check.headOption match {
+        case Some(l) =>
           val region = water.bfs(l).toVector
           go(check.diff(region), accum :+ region.toSet)
-        })
+        case None => accum
       }
 
       go(water.nodes, Vector.empty)
     }
+
+    lazy val indexedRegions = waterRegions.zipWithIndex
+
+    def inWaterRegion(location: Location): Option[Int] = indexedRegions.find(_._1.contains(location)).map(_._2)
 
     def mark(locations: Set[Location]): WaterSource = WaterSource(width, height, rep ++ locations.map((_, Marked)))
 
