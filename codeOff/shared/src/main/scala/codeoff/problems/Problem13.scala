@@ -11,11 +11,8 @@ object Problem13 {
     inputFiles.foreach{file =>
       val text = io.readFileLines(s"$directory/$file")
       val state = IntensityPlaneParser.parse(text.mkString(" ")).get
-      val solutionOutput = state.draw
-      println(solutionOutput.mkString("\n"))
-      println(state.layerLocations.get(2).get)
-      println(state.layerLocations.keySet)
-      //io.writeFileLines(s"$directory/${file.replace(".in", ".out")}", solutionOutput)
+      val solutionOutput = state.calculateIntensities.draw
+      io.writeFileLines(s"$directory/${file.replace(".in", ".out")}", solutionOutput)
     }
   }
 }

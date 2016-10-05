@@ -33,15 +33,16 @@ object Location {
 
   def orderedStream(width: Int, height: Int, xOffset: Int = 0, yOffset: Int = 0): Stream[Location] = {
     Stream.iterate(Location(xOffset, yOffset), width * height)(l => {
-      if (l.x == (width - 1))
-        Location(0, l.y + 1)
+      if (l.x == (xOffset + width - 1))
+        Location(xOffset, l.y + 1)
       else
         Location(l.x + 1, l.y)
     })
   }
 
-  def band(xMin: Int, xMax: Int, yMin: Int, yMax: Int): Stream[Location] =
-    orderedStream(xMax-xMin+1, yMax-yMin+1, xMin, yMin).filterNot(l => (l.x < xMax) && (l.x > xMin) && (l.y < yMax) && (l.y > yMin))
+  def band(topLeft: Location, bottomRight: Location): Stream[Location] =
+    orderedStream(bottomRight.x-topLeft.x+1, bottomRight.y-topLeft.y+1, topLeft.x, topLeft.y).filterNot(l =>
+      (l.x < bottomRight.x) && (l.x > topLeft.x) && (l.y < bottomRight.y) && (l.y > topLeft.y))
 
   implicit val locationOrdering: Ordering[Location] = new Ordering[Location] {
     override def compare(l1: Location, l2: Location): Int = {
