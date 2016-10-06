@@ -1,7 +1,5 @@
 package codeoff.model
 
-import codeoff.search.{AStarMutable, InformedSearchNode, SearchTree, _}
-
 import scala.annotation.tailrec
 import scala.collection.immutable.HashSet
 
@@ -38,31 +36,6 @@ object WaterSource {
   case class WaterSource(width: Int, height: Int, rep: Map[Location, Entity]) {
     import Entity._
 
-    def locationHeuristic(goals: Set[Location]): Heuristic[Location] = l => goals.map(g => Distance.manhattan(l, g)).min
-
-    def locationGoal(goals: Set[Location]): Goal[Location] = l => goals.flatMap(neighbours).filter(isWall).contains(l)
-
-    def transition(h: Heuristic[Location]): Transition[InformedSearchNode[Location, Location]] = node => {
-      neighbours(node.state).filter(isWall).toStream.map(loc => {
-        val nextState = loc
-        InformedSearchNode(nextState, loc, node.g + 1, h(nextState))
-      })
-    }
-
-    def shortestPath(from: Set[Location], to: Set[Location]): List[Location] = {
-
-      val goal = locationGoal(to)
-      val h = locationHeuristic(to)
-
-      def go(location: Location): List[Location] = {
-        val initial = InformedSearchNode(location, location, 0, h(location))
-        val searchTree = SearchTree(initial, transition(h))
-        AStarMutable.runPlan(searchTree, goal)
-      }
-
-      if (from.intersect(to).isEmpty)from.map(go).minBy(_.size) else List.empty
-    }
-
     lazy val allWater: Set[Location] = rep.filter(_._2 == Water).keySet
 
     lazy val allWall: Set[Location] = rep.filter(_._2 == Wall).keySet
@@ -75,6 +48,24 @@ object WaterSource {
       case Some(Wall) => true
       case _ => false
     })
+
+    lazy val wallEdges: Set[Location] = allWall.filter(x => neighbours(x).map(rep.get).exists{
+      case Some(Water) => true
+      case _ => false
+    })
+
+    private[this] lazy val indexedRegions = waterRegions.zipWithIndex
+
+    private[this] def regionIndex(location: Location): Option[Int] =
+      indexedRegions.find(_._1.contains(location)).map(_._2)
+
+    def regionIndex(locations: Set[Location]): Set[Int] = locations.flatMap(x => regionIndex(x) match {
+      case Some(r) => HashSet(r)
+      case _ => HashSet.empty[Int]
+    })
+
+    def wallEdges(density: Int): Set[Location] =
+      wallEdges.filter(x => regionIndex(neighbours(x)).size > 1)
 
     def removeWall(locations: Set[Location]): WaterSource = {
       val walls = locations.intersect(rep.keySet).filter(x => rep.get(x) match {
@@ -97,7 +88,7 @@ object WaterSource {
          go(toCheck, seen ++ frontier)
        }
       }
-      go(Set(location), HashSet.empty)
+      go(HashSet(location), HashSet.empty)
     }
 
     lazy val waterRegions: Vector[Set[Location]] = {
