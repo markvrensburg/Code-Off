@@ -1,8 +1,9 @@
 package codeoff.model
 
-import quiver._
+import codeoff.search.{AStarMutable, InformedSearchNode, SearchTree, _}
 
 import scala.annotation.tailrec
+import scala.collection.immutable.HashSet
 
 object WaterSource {
 
@@ -37,64 +38,78 @@ object WaterSource {
   case class WaterSource(width: Int, height: Int, rep: Map[Location, Entity]) {
     import Entity._
 
+    def locationHeuristic(goals: Set[Location]): Heuristic[Location] = l => goals.map(g => Distance.manhattan(l, g)).min
+
+    def locationGoal(goals: Set[Location]): Goal[Location] = l => goals.flatMap(neighbours).filter(isWall).contains(l)
+
+    def transition(h: Heuristic[Location]): Transition[InformedSearchNode[Location, Location]] = node => {
+      neighbours(node.state).filter(isWall).toStream.map(loc => {
+        val nextState = loc
+        InformedSearchNode(nextState, loc, node.g + 1, h(nextState))
+      })
+    }
+
+    def shortestPath(from: Set[Location], to: Set[Location]): List[Location] = {
+
+      val goal = locationGoal(to)
+      val h = locationHeuristic(to)
+
+      def go(location: Location): List[Location] = {
+        val initial = InformedSearchNode(location, location, 0, h(location))
+        val searchTree = SearchTree(initial, transition(h))
+        AStarMutable.runPlan(searchTree, goal)
+      }
+
+      if (from.intersect(to).isEmpty)from.map(go).minBy(_.size) else List.empty
+    }
+
     lazy val allWater: Set[Location] = rep.filter(_._2 == Water).keySet
 
     lazy val allWall: Set[Location] = rep.filter(_._2 == Wall).keySet
+
+    def isWall(location: Location): Boolean = rep.get(location).fold(false)(_ == Wall)
+
+    def isWater(location: Location): Boolean = rep.get(location).fold(false)(_ == Water)
 
     lazy val waterEdges: Set[Location] = allWater.filter(x => neighbours(x).map(rep.get).exists{
       case Some(Wall) => true
       case _ => false
     })
 
-    lazy val wallEdges: Set[Location] = allWall.filter(x => neighbours(x).map(rep.get).exists{
-      case Some(Water) => true
-      case _ => false
-    })
-
-    def removeWall(location: Location): WaterSource = {
-      rep.get(location).fold(this) {
-        case Wall => WaterSource(width, height, rep + ((location, Water)))
-        case _ => this
-      }
-    }
-
     def removeWall(locations: Set[Location]): WaterSource = {
       val walls = locations.intersect(rep.keySet).filter(x => rep.get(x) match {
         case Some(Wall) => true
         case _ => false
       })
-
       WaterSource(width, height, rep ++ walls.map(x => (x, Water)))
     }
-
-    def waterBody(location: Location): Set[Location] = graph.labfilter(_ == Water).bfs(location).toSet
 
     def neighbours(location: Location): Set[Location] =
       Direction.simpleDirections.map(location(_)).filter(rep.get(_).isDefined)
 
-    lazy val graph: Graph[Location, Entity, Unit] = rep.toVector.map(x => {
-      val edges = neighbours(x._1).toVector.map(() -> _)
-      Context(edges, x._1, x._2, edges)
-    }).foldLeft(empty[Location, Entity, Unit])((x, y) => y.embed(x))
-
-    lazy val waterRegions: Vector[Set[Location]] = {
-
-      val water = graph.labfilter(_ == Water)
-
+    private[this] def waterBfs(location: Location): Set[Location] = {
       @tailrec
-      def go(check: Vector[Location], accum: Vector[Set[Location]]): Vector[Set[Location]] = check.headOption match {
-        case Some(l) =>
-          val region = water.bfs(l).toVector
-          go(check.diff(region), accum :+ region.toSet)
-        case None => accum
+      def go(frontier: Set[Location], seen: Set[Location]): Set[Location] = {
+       if (frontier.isEmpty)
+         seen
+       else {
+         val toCheck = frontier.flatMap(x => neighbours(x).filter(y => isWater(y) && !seen.contains(y)))
+         go(toCheck, seen ++ frontier)
+       }
       }
-
-      go(water.nodes, Vector.empty)
+      go(Set(location), HashSet.empty)
     }
 
-    lazy val indexedRegions = waterRegions.zipWithIndex
-
-    def inWaterRegion(location: Location): Option[Int] = indexedRegions.find(_._1.contains(location)).map(_._2)
+    lazy val waterRegions: Vector[Set[Location]] = {
+      @tailrec
+      def go(check: Set[Location], accum: Vector[Set[Location]]): Vector[Set[Location]] = check.headOption match {
+        case Some(l) =>
+          val region = waterBfs(l)
+          go(check.diff(region), accum :+ region)
+        case None => accum
+      }
+      go(allWater, Vector.empty)
+    }
 
     def mark(locations: Set[Location]): WaterSource = WaterSource(width, height, rep ++ locations.map((_, Marked)))
 
