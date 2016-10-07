@@ -1,7 +1,10 @@
 package codeoff.model
 
+import codeoff.search.SearchTree
+
 import scala.annotation.tailrec
 import scala.collection.immutable.HashSet
+import scalaz.Tree
 
 object WaterSource {
 
@@ -59,13 +62,26 @@ object WaterSource {
     private[this] def regionIndex(location: Location): Option[Int] =
       indexedRegions.find(_._1.contains(location)).map(_._2)
 
-    def regionIndex(locations: Set[Location]): Set[Int] = locations.flatMap(x => regionIndex(x) match {
-      case Some(r) => HashSet(r)
-      case _ => HashSet.empty[Int]
+    def borders(locations: Set[Location]): Set[Int] = neighbours(locations.filter(isWall)).flatMap(x => {
+      regionIndex(x) match {
+        case Some(r) => HashSet(r)
+        case _ => HashSet.empty[Int]
+      }
     })
 
-    def wallEdges(density: Int): Set[Location] =
-      wallEdges.filter(x => regionIndex(neighbours(x)).size > 1)
+    private[this] def edgePath(from: Location): Tree[(Location, Set[Location])] = {
+      SearchTree[(Location, Set[Location])]((from, HashSet(from)), n => {
+        val current = n._1
+        val accum = n._2
+        neighbours(current).filter(isWall).map(l => (l, accum + l)).toStream
+      }).tree
+    }
+
+    private[this] val edgePaths: Tree[Set[Location]] =
+      Tree.Node(HashSet.empty[Location], wallEdges.toStream.map(x => edgePath(x).map(_._2)))
+
+    def wallEdgesDepth(depth: Int): Vector[Set[Location]] =
+      edgePaths.levels(depth).toVector.filter(l => borders(l).size > 1)
 
     def removeWall(locations: Set[Location]): WaterSource = {
       val walls = locations.intersect(rep.keySet).filter(x => rep.get(x) match {
@@ -75,8 +91,18 @@ object WaterSource {
       WaterSource(width, height, rep ++ walls.map(x => (x, Water)))
     }
 
+    def addWall(locations: Set[Location]): WaterSource = {
+      val walls = locations.intersect(rep.keySet).filter(x => rep.get(x) match {
+        case Some(Water) => true
+        case _ => false
+      })
+      WaterSource(width, height, rep ++ walls.map(x => (x, Wall)))
+    }
+
     def neighbours(location: Location): Set[Location] =
       Direction.simpleDirections.map(location(_)).filter(rep.get(_).isDefined)
+
+    def neighbours(locations: Set[Location]): Set[Location] = locations.flatMap(neighbours)
 
     private[this] def waterBfs(location: Location): Set[Location] = {
       @tailrec

@@ -27,7 +27,7 @@ object Problem9 {
   def solve(input: BomberArena) = {
     val search = BombPlacementSearch(input)
     val inputPlacements = (BomberArena.walls(input.width, input.height), BombPlacement(input).bombPlacements)
-    //@TODO refactor InformedSearchNode, using null is a crime!!!!
+    //@TODO refactor InformedSearchNode for optional actions, using null is a crime!!!!
     val initial = InformedSearchNode[(BomberArena, Set[Block[Bomb]]), Block[Bomb]](inputPlacements, null, 0, search.heuristic(inputPlacements))
     val searchTree = SearchTree(initial, search.transition)
     AStarMutable.runPlan(searchTree, search.goal)
